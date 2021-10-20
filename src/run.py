@@ -143,6 +143,13 @@ def download_sectional_charts():
 
 def expand_colors():
 	print('Expanding chart colors to RGBA...')
+
+	# Remove any tmp files which might already be present
+	run_command(
+		'rm ' + \
+		' ' + os.path.join(colored_charts_directory, 'tmp.tif')
+	)
+
 	for filename in os.listdir(raw_charts_directory):
 		if filename.endswith('.tif') and not os.path.exists(os.path.join(colored_charts_directory, filename)):
 			run_command(
@@ -150,15 +157,30 @@ def expand_colors():
 				' -expand rgba' + \
 				' -of GTiff' + \
 				' ' + os.path.join(raw_charts_directory, filename) + \
+				' ' + os.path.join(colored_charts_directory, 'tmp.tif')
+			)
+
+			# Move the temp file to its final location
+			run_command(
+				'mv ' + \
+				' ' + os.path.join(colored_charts_directory, 'tmp.tif') + \
 				' ' + os.path.join(colored_charts_directory, filename)
 			)
-			print('    Expanded colors for ' + os.path.splitext(filename)[0])
 
+			print('    Expanded colors for ' + os.path.splitext(filename)[0])
 
 def crop_charts():
 	print('Cropping charts to remove legend and border...')
+
+      # Remove any tmp files which might already be present
+	run_command(
+		'rm ' + \
+		' ' + os.path.join(cropped_charts_directory, 'tmp.tif')
+	)
+
 	for filename in os.listdir(colored_charts_directory):
 		if filename.endswith('.tif'):
+			# Handle the Western Aleutian Islands a little differently because they cross the +-180 longitude line
 			if 'Western_Aleutian_Islands' in filename and not os.path.exists(os.path.join(cropped_charts_directory, 'Western_Aleutian_Islands_East.tif')) and not os.path.exists(os.path.join(cropped_charts_directory, 'Western_Aleutian_Islands_West.tif')):
 				run_command(
 					'gdalwarp' + \
@@ -191,12 +213,26 @@ def crop_charts():
 					' -crop_to_cutline' + \
 					' -of GTiff' + \
 					' ' + os.path.join(colored_charts_directory, filename) + \
+					' ' + os.path.join(cropped_charts_directory, 'tmp.tif')
+				)
+
+				# Move the temp file to its final location
+				run_command(
+					'mv ' + \
+					' ' + os.path.join(cropped_charts_directory, 'tmp.tif') + \
 					' ' + os.path.join(cropped_charts_directory, filename)
 				)
+
 				print('    Cropped ' + os.path.splitext(filename)[0])
 
 
 def warp_charts():
+	# Remove any tmp files which might already be present
+	run_command(
+		'rm ' + \
+		' ' + os.path.join(warped_charts_directory, 'tmp.tif')
+	)
+
 	print('Warping charts...')
 	for filename in os.listdir(cropped_charts_directory):
 		if filename.endswith('.tif') and not os.path.exists(os.path.join(warped_charts_directory, filename)):
@@ -205,8 +241,16 @@ def warp_charts():
 				' -r lanczos' + \
 				' -t_srs EPSG:4326' + \
 				' ' + os.path.join(cropped_charts_directory, filename) + \
+				' ' + os.path.join(warped_charts_directory, 'tmp.tif')
+			)
+
+			# Move the temp file to its final location
+			run_command(
+				'mv ' + \
+				' ' + os.path.join(warped_charts_directory, 'tmp.tif') + \
 				' ' + os.path.join(warped_charts_directory, filename)
 			)
+
 			print('    Warped ' + os.path.splitext(filename)[0])
 
 
