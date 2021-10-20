@@ -77,7 +77,6 @@ def download_chart(sectional_info):
 		with open(os.path.join(raw_charts_directory, sectional_info['location'] + '.zip'), 'wb') as zip_file:
 			web_response = urlopen(sectional_info['url'])
 			zip_file.write(web_response.read())
-			print('    Downloaded ' + sectional_info['location'] + ' (version: ' + str(sectional_info['version']) + ')')
 
 	except HTTPError as e:
 		print('HTTP Error:' + e.code + sectional_info['url'])
@@ -133,6 +132,7 @@ def download_sectional_charts():
 
 	# Iterate over each item in the download queue. The files in this queue are only the ones which are newer or simply missing
 	for sectional_info in download_queue:
+		print("Download: " + sectional_info['location'] + ", Version date: " + sectional_info['version'])
 
 		# Remove TIFF files in processing directories. This is a fundamental part in the  mechanism to resume procssing after a halted run.
 		run_command('rm -f ' + os.path.join(raw_charts_directory, sectional_info['location'] + '.tif'))
