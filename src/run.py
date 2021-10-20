@@ -18,11 +18,11 @@ tmp_directory = os.path.join(base_directory, 'tmp/')
 assets_directory = os.path.join(base_directory, 'assets/')
 clipping_shapes_directory = os.path.join(assets_directory, 'clipping_shapes/')
 tilers_tools_directory = os.path.join(current_directory, 'tilers_tools')
-raw_charts_directory = os.path.join(tmp_directory, 'raw/')
-colored_charts_directory = os.path.join(tmp_directory, 'rgba/')
-cropped_charts_directory = os.path.join(tmp_directory, 'cropped/')
-warped_charts_directory = os.path.join(tmp_directory, 'warped/')
-intermediate_tiles_directory = os.path.join(tmp_directory, 'intermediate_tiles')
+raw_charts_directory = os.path.join(tmp_directory, '01_raw/')
+colored_charts_directory = os.path.join(tmp_directory, '02_rgba/')
+cropped_charts_directory = os.path.join(tmp_directory, '03_cropped/')
+warped_charts_directory = os.path.join(tmp_directory, '04_warped/')
+intermediate_tiles_directory = os.path.join(tmp_directory, '05_intermediate_tiles')
 sectional_version_index_file = os.path.join(tmp_directory, 'version_index')
 vrt_file = os.path.join(tmp_directory, 'merged_sectionals.vrt')
 
@@ -77,7 +77,6 @@ def download_chart(sectional_info):
 		with open(os.path.join(raw_charts_directory, sectional_info['location'] + '.zip'), 'wb') as zip_file:
 			web_response = urlopen(sectional_info['url'])
 			zip_file.write(web_response.read())
-			print('    Downloaded ' + sectional_info['location'] + ' (version: ' + str(sectional_info['version']) + ')')
 
 	except HTTPError as e:
 		print('HTTP Error:' + e.code + sectional_info['url'])
@@ -131,13 +130,23 @@ def download_sectional_charts():
 			else:
 				download_queue.append(sectional_info)
 
+	# Iterate over each item in the download queue. The files in this queue are only the ones which are newer or simply missing
 	for sectional_info in download_queue:
+		print("Download: " + sectional_info['location'] + ", Version date: " + sectional_info['version'])
+
+		# Remove TIFF files in processing directories. This is a fundamental part in the  mechanism to resume procssing after a halted run.
 		run_command('rm -f ' + os.path.join(raw_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(colored_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(cropped_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(warped_charts_directory, sectional_info['location'] + '.tif'))
+
+		# Download the individual chart
 		download_chart(sectional_info)
+
+		# Write the sectional information to the index file
 		set_local_sectional_version(sectional_info['location'], sectional_info['version'])
+
+		# Unzip the sectional and delete the original zip file
 		unzip_archive(os.path.join(raw_charts_directory, sectional_info['location'] + '.zip'), sectional_info['location'] + '.tif')
 
 
