@@ -131,13 +131,22 @@ def download_sectional_charts():
 			else:
 				download_queue.append(sectional_info)
 
+	# Iterate over each item in the download queue. The files in this queue are only the ones which are newer or simply missing
 	for sectional_info in download_queue:
+
+		# Remove TIFF files in processing directories. This is a fundamental part in the  mechanism to resume procssing after a halted run.
 		run_command('rm -f ' + os.path.join(raw_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(colored_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(cropped_charts_directory, sectional_info['location'] + '.tif'))
 		run_command('rm -f ' + os.path.join(warped_charts_directory, sectional_info['location'] + '.tif'))
+
+		# Download the individual chart
 		download_chart(sectional_info)
+
+		# Write the sectional information to the index file
 		set_local_sectional_version(sectional_info['location'], sectional_info['version'])
+
+		# Unzip the sectional and delete the original zip file
 		unzip_archive(os.path.join(raw_charts_directory, sectional_info['location'] + '.zip'), sectional_info['location'] + '.tif')
 
 
