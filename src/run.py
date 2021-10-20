@@ -226,14 +226,16 @@ def create_leaflet_map_tiles():
 	)
 
 	# Create map tiles
+      # Create map tiles
 	run_command(
-		'python ' + os.path.join(tilers_tools_directory, 'gdal_tiler.py') + \
-		' --profile=tms' + \
-		' --release' + \
-		' --paletted' + \
-		' --zoom=' + ','.join([str(zoom_level) for zoom_level in range(MIN_ZOOM, MAX_ZOOM + 1)]) + \
-		' --dest-dir=' + intermediate_tiles_directory + \
-		' ' + vrt_file, True
+		'gdal2tiles.py ' + \
+		' --profile=mercator' + \
+		' -x' + \
+		' -r ' + RESAMPLING  + \
+		' --xyz' + \
+		' --zoom=' + str(MIN_ZOOM)  + '-' + str(MAX_ZOOM) + \
+		' ' + vrt_file + \
+            ' ' + intermediate_tiles_directory, True
 	)
 
 	# Move created map tiles to tiles directory
