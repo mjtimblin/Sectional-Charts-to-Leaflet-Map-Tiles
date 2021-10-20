@@ -6,6 +6,7 @@ import subprocess
 from re import findall
 from zipfile import ZipFile
 from urllib.request import urlopen, HTTPError, URLError
+from datetime import datetime as dt
 
 FAA_VFR_CHARTS_URL = 'https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/vfr/'
 MIN_ZOOM = 0
@@ -64,7 +65,7 @@ def get_local_sectional_version(location):
 		try:
 			return shelf[location]
 		except KeyError:
-			return -1
+			return "01-01-1900"
 
 
 def set_local_sectional_version(location, version):
@@ -122,10 +123,15 @@ def download_sectional_charts():
 		sectional_info = {
 			'url': str(url),
 			'location': str(location),
-			'version': int(version)
+			'version': str(version)
 		}
 
-		if sectional_info['location'] + '.tif' not in os.listdir(raw_charts_directory) or get_local_sectional_version(sectional_info['location']) < sectional_info['version']:
+		online_version_date = dt.strptime(sectional_info['version'], "%m-%d-%Y")
+		local_version_date = dt.strptime(get_local_sectional_version(sectional_info['location']), "%m-%d-%Y")
+
+		# Only add to the queue if it's not already downloaded OR if the online file is more recent
+		if sectional_info['location'] + '.tif' not in os.listdir(raw_charts_directory) or \
+		            local_version_date < online_version_date:
 			for item in download_queue:
 				if item['location'] == sectional_info['location'] and item['version'] < sectional_info['version']:
 					item['url'] = sectional_info['url']
