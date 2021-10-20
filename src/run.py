@@ -113,9 +113,12 @@ def download_sectional_charts():
 	download_queue = list()
 	web_response = urlopen(FAA_VFR_CHARTS_URL)
 	web_content = str(web_response.read())
-	matches = findall(r'="?(https?\:\/\/aeronav\.faa\.gov\/content\/aeronav\/sectional_files\/([a-zA-Z_\-]+)_([0-9]+)\.zip)"?>', web_content)
 
-	for url, location, version in matches:
+	# Find all the sectionals
+	matches = findall(r'="?(https?\:\/\/aeronav\.faa\.gov\/visual\/(\d{2}-\d{2}-\d{4})\/sectional-files\/([a-zA-Z_\-]+)\.zip)"?>', web_content)
+
+	# Iterate over the matches
+	for url, version, location in matches:
 		sectional_info = {
 			'url': str(url),
 			'location': str(location),
