@@ -3,3 +3,6 @@
 /tmp
 /tiles/*
 !/tiles/example.html
+
+# MacOS thumbnail file
+.DS_Store
